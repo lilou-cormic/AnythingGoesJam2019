@@ -1,11 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
-[RequireComponent(typeof(Rigidbody2D))]
 public class Player : MonoBehaviour
 {
-    private Rigidbody2D rb;
-
     public Vertex CurrentVertex { get; set; }
 
     private Map Map => CurrentVertex.Map;
@@ -19,14 +17,21 @@ public class Player : MonoBehaviour
         {
             _FacingDirection = value;
 
+            float rotation = 0f;
+
             if (FacingDirection == Vector2Int.up)
-                rb.rotation = 0;
+                rotation = 90f;
             else if (FacingDirection == Vector2Int.right)
-                rb.rotation = 270;
+                rotation = 0f;
             else if (FacingDirection == Vector2Int.down)
-                rb.rotation = 180;
+                rotation = 270f;
             else if (FacingDirection == Vector2Int.left)
-                rb.rotation = 90;
+                rotation = 180f;
+
+            for (int i = 0; i < transform.childCount; i++)
+            {
+                transform.GetChild(i).transform.rotation = Quaternion.Euler(0f, 0f, rotation);
+            }
         }
     }
 
@@ -36,12 +41,7 @@ public class Player : MonoBehaviour
 
     private LineRenderer CurrentLine = null;
 
-    private Queue<Vertex> Linking = new Queue<Vertex>();
-
-    private void Awake()
-    {
-        rb = GetComponent<Rigidbody2D>();
-    }
+    private Stack<Vertex> Linking = new Stack<Vertex>();
 
     private void Start()
     {
@@ -76,15 +76,19 @@ public class Player : MonoBehaviour
 
         if (nextVertex != null)
         {
-            //TODO: BUG
-            if (!CurrentVertex.IsLinked || !nextVertex.IsLinked)
-            {
-                if (CurrentLine == null)
-                {
-                    CurrentLine = Map.GetLine();
-                    Linking.Clear();
+            var vertexNode = Map.Outline.Find(CurrentVertex);
 
-                    AddPointToLine();
+            if (vertexNode != null)
+            {
+                if (nextVertex != Map.GetNextVertexNode(vertexNode).Value && nextVertex != Map.GetPreviousVertexNode(vertexNode).Value)
+                {
+                    if (CurrentLine == null)
+                    {
+                        CurrentLine = Map.GetLine();
+                        Linking.Clear();
+
+                        AddPointToLine();
+                    }
                 }
             }
 
@@ -107,7 +111,7 @@ public class Player : MonoBehaviour
     private void SetCurrentVertex(Vertex nextVertex)
     {
         CurrentVertex = nextVertex;
-        rb.MovePosition(CurrentVertex.Coordinates);
+        transform.position = CurrentVertex.Coordinates;
     }
 
     private void AddPointToLine()
@@ -115,7 +119,7 @@ public class Player : MonoBehaviour
         CurrentLine.positionCount++;
         CurrentLine.SetPosition(CurrentLine.positionCount - 1, CurrentVertex.Coordinates);
 
-        Linking.Enqueue(CurrentVertex);
+        Linking.Push(CurrentVertex);
     }
 
     private Vertex GetNextVertex()
@@ -129,12 +133,35 @@ public class Player : MonoBehaviour
 
     private void DestroySection()
     {
+        if (Linking.Count == 0)
+            return;
+
         //TODO DestroySection
 
         foreach (var vertex in Linking)
         {
             vertex.IsLinked = true;
         }
+
+        var first = Linking.Last();
+
+        var nextNode = Map.Outline.Find(Linking.Peek());
+
+        int failSafeCounter = 0;
+
+        while (nextNode.Value != first)
+        {
+            Linking.Push(nextNode.Value);
+
+            nextNode = Map.GetNextVertexNode(nextNode);
+
+            failSafeCounter++;
+
+            if (failSafeCounter > 10000)
+                throw new System.StackOverflowException("Infinite loop in DestroySection");
+        }
+
+        Map.SetOutline(Linking);
 
         CurrentLine = null;
         Linking.Clear();
@@ -143,7 +170,7 @@ public class Player : MonoBehaviour
     private void Reset()
     {
         if (Linking.Count > 0)
-            SetCurrentVertex(Linking.Dequeue());
+            SetCurrentVertex(Linking.Last());
 
         Destroy(CurrentLine.gameObject);
 

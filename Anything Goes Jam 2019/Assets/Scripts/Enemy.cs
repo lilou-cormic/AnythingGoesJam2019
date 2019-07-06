@@ -6,13 +6,13 @@ public class Enemy : MonoBehaviour
 {
     public Cell CurrentCell { get; set; }
 
-    public Vector2Int FacingDirection { get; set; }
+    public Vector3Int FacingDirection { get; set; }
 
     public bool CanMove()
     {
         Map map = CurrentCell.Map;
 
-        Vector2Int nextIndex = CurrentCell.Index + FacingDirection;
+        Vector3Int nextIndex = CurrentCell.Index + FacingDirection;
 
         Cell nextCell = map.TryGetCell(nextIndex.x, nextIndex.y);
 

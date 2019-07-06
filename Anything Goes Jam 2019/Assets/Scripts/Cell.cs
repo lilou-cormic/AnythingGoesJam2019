@@ -4,7 +4,7 @@ public class Cell
 {
     public Map Map { get; }
 
-    public Vector2Int Index { get; }
+    public Vector3Int Index { get; }
 
     public Vector2 Coordinates => new Vector2(Index.x + 0.5f, Index.y + 0.5f);
 
@@ -16,7 +16,7 @@ public class Cell
     {
         Map = map;
 
-        Index = new Vector2Int(colIndex, rowIndex);
+        Index = new Vector3Int(colIndex, rowIndex, 0);
 
         Vertices = new Vertex[2, 2];
         Vertices[0, 1] = topLeftVertex; Vertices[1, 1] = topRightVertex;

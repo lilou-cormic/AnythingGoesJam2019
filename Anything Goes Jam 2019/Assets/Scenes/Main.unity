@@ -715,8 +715,12 @@ MonoBehaviour:
   DestoyedCell: {fileID: 11400000, guid: 243cdf57e8e67b14d922445837603644, type: 2}
   PlayerPrefeb: {fileID: 423420626070390219, guid: 371187546b23f924080ff92fbc8a8d72,
     type: 3}
+  EnemyPrefab: {fileID: 4328664875909446278, guid: 416faceb10ac8eb4a9cdc594152ee46a,
+    type: 3}
   LinePrefab: {fileID: 1852955899101587244, guid: 61885a1c018cd8f4198d3af21eb0ff2f,
     type: 3}
+  PlacedLineMaterial: {fileID: 2100000, guid: ac318c71ad91a2b46b5fb3bdac6f8808, type: 2}
+  Enemies: []
 --- !u!4 &2069764550
 Transform:
   m_ObjectHideFlags: 0

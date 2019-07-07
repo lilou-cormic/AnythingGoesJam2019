@@ -124,6 +124,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 305c81e060a0d56479a58bc5fe87612c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  PlacedLineMaterial: {fileID: 2100000, guid: ac318c71ad91a2b46b5fb3bdac6f8808, type: 2}
 --- !u!1 &423420626154362987
 GameObject:
   m_ObjectHideFlags: 0

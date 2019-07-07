@@ -8,6 +8,9 @@ public class Player : MonoBehaviour
 
     private Map Map => CurrentVertex.Map;
 
+    [SerializeField]
+    private Material PlacedLineMaterial = null;
+
     private Vector2Int _FacingDirection;
     public Vector2Int FacingDirection
     {
@@ -162,6 +165,8 @@ public class Player : MonoBehaviour
         }
 
         Map.SetOutline(Linking);
+
+        CurrentLine.material = PlacedLineMaterial;
 
         CurrentLine = null;
         Linking.Clear();

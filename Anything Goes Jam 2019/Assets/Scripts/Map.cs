@@ -8,6 +8,9 @@ public class Map : MonoBehaviour
 {
     private Cell[,] _cells;
 
+    private int CellColCount = 20;
+    private int CellRowCount = 10;
+
     private Vertex[,] _vertices;
 
     [SerializeField]
@@ -32,16 +35,25 @@ public class Map : MonoBehaviour
     private Player PlayerPrefeb = null;
 
     [SerializeField]
+    private Enemy EnemyPrefab = null;
+
+    [SerializeField]
     private LineRenderer LinePrefab = null;
 
+    [SerializeField]
+    private Material PlacedLineMaterial = null;
+
     public LinkedList<Vertex> Outline { get; private set; }
+
+    public List<Enemy> Enemies;
 
     private void Awake()
     {
         Outline = new LinkedList<Vertex>();
+        Enemies = new List<Enemy>();
 
-        _cells = new Cell[20, 10];
-        _vertices = new Vertex[_cells.GetLength(0) + 1, _cells.GetLength(1) + 1];
+        _cells = new Cell[CellColCount, CellRowCount];
+        _vertices = new Vertex[CellColCount + 1, CellRowCount + 1];
     }
 
     private void Start()
@@ -57,9 +69,9 @@ public class Map : MonoBehaviour
             }
         }
 
-        for (int i = 0; i < _cells.GetLength(0); i++)
+        for (int i = 0; i < CellColCount; i++)
         {
-            for (int j = 0; j < _cells.GetLength(1); j++)
+            for (int j = 0; j < CellRowCount; j++)
             {
                 _cells[i, j] = new Cell(this, i, j, _vertices[i, j], _vertices[i + 1, j], _vertices[i, j + 1], _vertices[i + 1, j + 1]);
 
@@ -76,6 +88,7 @@ public class Map : MonoBehaviour
         line.SetPosition(2, new Vector3(verticesColCount - 1, verticesRowCount - 1));
         line.SetPosition(3, new Vector3(0, verticesRowCount - 1));
         line.SetPosition(4, new Vector3(0, 0));
+        line.material = PlacedLineMaterial;
 
         Outline.Clear();
 
@@ -114,6 +127,33 @@ public class Map : MonoBehaviour
         Player player = Instantiate(PlayerPrefeb);
         player.CurrentVertex = _vertices[0, 0];
         player.transform.position = new Vector3(player.CurrentVertex.Index.x, player.CurrentVertex.Index.y);
+
+        SpawnEnemies();
+    }
+
+    private void SpawnEnemies()
+    {
+        int enemyCount = 3;
+        int split = enemyCount + 1;
+        int lineSplit = (split / 2);
+
+        for (int i = 0; i < lineSplit; i++)
+        {
+            for (int j = 0; j < lineSplit; j++)
+            {
+                if (j != 0 || i != 0)
+                    SpawnEnemy(i, j, lineSplit);
+            }
+        }
+    }
+
+    private void SpawnEnemy(int i, int j, int lineSplit)
+    {
+        Enemy enemy = Instantiate(EnemyPrefab);
+        enemy.CurrentCell = _cells[Random.Range(i * CellColCount / lineSplit, (i + 1) * CellColCount / lineSplit), Random.Range(j * CellRowCount / lineSplit, (i + 1) * CellRowCount / lineSplit)];
+        enemy.transform.position = enemy.CurrentCell.Coordinates;
+
+        Enemies.Add(enemy);
     }
 
     private void Update()
@@ -131,6 +171,16 @@ public class Map : MonoBehaviour
 
         DestoyedTileMap.SetTile(cell.Index, DestoyedCell);
 
+        foreach (var enemy in Enemies.ToList())
+        {
+            if (enemy.CurrentCell == cell)
+            {
+                Enemies.Remove(enemy);
+                enemy.Die();
+            }
+
+        }
+
         foreach (var vertex in cell.Vertices)
         {
             if (vertex.IsDestroyed)
@@ -145,7 +195,7 @@ public class Map : MonoBehaviour
     {
         //Debug.Log($"TryGetCell({i}, {j})");
 
-        if (i >= 0 && i < _cells.GetLength(0) && j >= 0 && j < _cells.GetLength(1))
+        if (i >= 0 && i < CellColCount && j >= 0 && j < CellRowCount)
             return _cells[i, j];
 
         return null;

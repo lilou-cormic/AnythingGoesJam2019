@@ -44,7 +44,7 @@ public class Player : MonoBehaviour
 
     private LineRenderer CurrentLine = null;
 
-    private Stack<Vertex> Linking = new Stack<Vertex>();
+    private List<Vertex> Linking = new List<Vertex>();
 
     private void Start()
     {
@@ -88,8 +88,6 @@ public class Player : MonoBehaviour
                     if (CurrentLine == null)
                     {
                         CurrentLine = Map.GetLine();
-                        Linking.Clear();
-
                         AddPointToLine();
                     }
                 }
@@ -104,10 +102,12 @@ public class Player : MonoBehaviour
             }
 
             if (CurrentLine != null)
+            {
                 AddPointToLine();
 
-            if (nextVertex.IsLinked)
-                DestroySection();
+                if (nextVertex.IsLinked)
+                    DestroySection();
+            }
         }
     }
 
@@ -122,7 +122,7 @@ public class Player : MonoBehaviour
         CurrentLine.positionCount++;
         CurrentLine.SetPosition(CurrentLine.positionCount - 1, CurrentVertex.Coordinates);
 
-        Linking.Push(CurrentVertex);
+        Linking.Add(CurrentVertex);
     }
 
     private Vertex GetNextVertex()
@@ -146,17 +146,21 @@ public class Player : MonoBehaviour
             vertex.IsLinked = true;
         }
 
-        var first = Linking.Last();
+        var first = Linking.First();
 
-        var nextNode = Map.Outline.Find(Linking.Peek());
+        List<Vertex> outline1 = new List<Vertex>(Linking);
+        List<Vertex> outline2 = new List<Vertex>(Linking);
+
+        var nextNode = Map.Outline.Find(Linking.Last());
 
         int failSafeCounter = 0;
 
         while (nextNode.Value != first)
         {
-            Linking.Push(nextNode.Value);
-
             nextNode = Map.GetNextVertexNode(nextNode);
+
+            if (nextNode.Value != first)
+                outline1.Add(nextNode.Value);
 
             failSafeCounter++;
 
@@ -164,7 +168,24 @@ public class Player : MonoBehaviour
                 throw new System.StackOverflowException("Infinite loop in DestroySection");
         }
 
-        Map.SetOutline(Linking);
+        nextNode = Map.Outline.Find(Linking.Last());
+
+        failSafeCounter = 0;
+
+        while (nextNode.Value != first)
+        {
+            nextNode = Map.GetPreviousVertexNode(nextNode);
+
+            if (nextNode.Value != first)
+                outline2.Add(nextNode.Value);
+
+            failSafeCounter++;
+
+            if (failSafeCounter > 10000)
+                throw new System.StackOverflowException("Infinite loop in DestroySection");
+        }
+
+        Map.SetOutline(outline1, outline2);
 
         CurrentLine.material = PlacedLineMaterial;
 
@@ -175,7 +196,7 @@ public class Player : MonoBehaviour
     private void Reset()
     {
         if (Linking.Count > 0)
-            SetCurrentVertex(Linking.Last());
+            SetCurrentVertex(Linking.First());
 
         Destroy(CurrentLine.gameObject);
 

@@ -17,6 +17,9 @@ public class Map : MonoBehaviour
     private PolygonCollider2D outlineCollider = null;
 
     [SerializeField]
+    private PolygonCollider2D testCollider = null;
+
+    [SerializeField]
     private Tilemap BackgroundTileMap = null;
 
     [SerializeField]
@@ -45,7 +48,12 @@ public class Map : MonoBehaviour
 
     public LinkedList<Vertex> Outline { get; private set; }
 
-    public List<Enemy> Enemies;
+    public List<Enemy> Enemies { get; private set; }
+
+    public float CellDestroyedPct { get; private set; }
+
+    [SerializeField]
+    public TMPro.TextMeshProUGUI CellDestroyedPctText = null;
 
     private void Awake()
     {
@@ -216,12 +224,45 @@ public class Map : MonoBehaviour
         return Instantiate(LinePrefab, transform);
     }
 
-    public bool IsPointInside(Vector2 point)
+    public void SetOutline(IEnumerable<Vertex> outline1, IEnumerable<Vertex> outline2)
     {
-        return outlineCollider.OverlapPoint(point);
+        SetOutline(GetOutline(outline1, outline2));
     }
 
-    public void SetOutline(IEnumerable<Vertex> outline)
+    private IEnumerable<Vertex> GetOutline(IEnumerable<Vertex> outline1, IEnumerable<Vertex> outline2)
+    {
+        testCollider.points = outline1.Select(x => x.Coordinates).ToArray();
+
+        int count1 = Enemies.Count(x => testCollider.OverlapPoint(x.CurrentCell.Coordinates));
+
+        testCollider.points = outline2.Select(x => x.Coordinates).ToArray();
+
+        int count2 = Enemies.Count(x => testCollider.OverlapPoint(x.CurrentCell.Coordinates));
+
+        if (count1 > count2)
+            return outline1;
+
+        if (count2 > count1)
+            return outline2;
+
+        testCollider.points = outline1.Select(x => x.Coordinates).ToArray();
+
+        count1 = _cells.Cast<Cell>().Count(x => testCollider.OverlapPoint(x.Coordinates));
+
+        testCollider.points = outline2.Select(x => x.Coordinates).ToArray();
+
+        count2 = _cells.Cast<Cell>().Count(x => testCollider.OverlapPoint(x.Coordinates));
+
+        if (count1 > count2)
+            return outline1;
+
+        if (count2 > count1)
+            return outline2;
+
+        return outline1;
+    }
+
+    private void SetOutline(IEnumerable<Vertex> outline)
     {
         Outline = new LinkedList<Vertex>(outline);
 
@@ -229,8 +270,29 @@ public class Map : MonoBehaviour
 
         foreach (var cell in _cells)
         {
-            if (!IsPointInside(cell.Coordinates))
+            if (cell.IsDestroyed)
+                continue;
+
+            if (!outlineCollider.OverlapPoint(cell.Coordinates))
                 DestroyCell(cell);
+        }
+
+        CellDestroyedPct = (_cells.Cast<Cell>().Count(x => x.IsDestroyed) / (float)_cells.Length) * 100;
+
+        CellDestroyedPctText.text = CellDestroyedPct.ToString("F1") + "%";
+
+        if (CellDestroyedPct >= 80)
+            Win();
+    }
+
+    private void Win()
+    {
+        foreach (var cell in _cells)
+        {
+            if (cell.IsDestroyed)
+                continue;
+
+            DestroyCell(cell);
         }
     }
 
@@ -246,6 +308,8 @@ public class Map : MonoBehaviour
 
     private void DebugPrint()
     {
+        Debug.Log(string.Join(System.Environment.NewLine, Outline.Select(x => x.Coordinates)));
+
         string print = string.Empty;
 
         for (int j = _vertices.GetLength(1) - 1; j >= 0; j--)

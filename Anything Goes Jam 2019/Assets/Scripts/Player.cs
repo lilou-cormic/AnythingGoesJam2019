@@ -1,9 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+[RequireComponent(typeof(FacingRotation))]
 public class Player : MonoBehaviour
 {
+    private static Player _instance;
+
     public Vertex CurrentVertex { get; set; }
 
     private Map Map => CurrentVertex.Map;
@@ -11,32 +15,10 @@ public class Player : MonoBehaviour
     [SerializeField]
     private Material PlacedLineMaterial = null;
 
-    private Vector2Int _FacingDirection;
-    public Vector2Int FacingDirection
-    {
-        get { return _FacingDirection; }
+    [SerializeField]
+    private EdgeCollider2D LineCollider = null;
 
-        set
-        {
-            _FacingDirection = value;
-
-            float rotation = 0f;
-
-            if (FacingDirection == Vector2Int.up)
-                rotation = 90f;
-            else if (FacingDirection == Vector2Int.right)
-                rotation = 0f;
-            else if (FacingDirection == Vector2Int.down)
-                rotation = 270f;
-            else if (FacingDirection == Vector2Int.left)
-                rotation = 180f;
-
-            for (int i = 0; i < transform.childCount; i++)
-            {
-                transform.GetChild(i).transform.rotation = Quaternion.Euler(0f, 0f, rotation);
-            }
-        }
-    }
+    private FacingRotation FacingRotation;
 
     private float _movementCooldown = 0.1f;
 
@@ -46,9 +28,16 @@ public class Player : MonoBehaviour
 
     private List<Vertex> Linking = new List<Vertex>();
 
+    public static event Action PlayerMoved;
+
+    private void Awake()
+    {
+        _instance = this;
+    }
+
     private void Start()
     {
-        FacingDirection = Vector2Int.right;
+        FacingRotation = GetComponent<FacingRotation>();
     }
 
     private void Update()
@@ -63,13 +52,13 @@ public class Player : MonoBehaviour
         var vertical = Input.GetAxisRaw("Vertical");
 
         if (vertical > 0)
-            FacingDirection = Vector2Int.up;
+            FacingRotation.FacingDirection = Vector2Int.up;
         else if (horizontal > 0)
-            FacingDirection = Vector2Int.right;
+            FacingRotation.FacingDirection = Vector2Int.right;
         else if (vertical < 0)
-            FacingDirection = Vector2Int.down;
+            FacingRotation.FacingDirection = Vector2Int.down;
         else if (horizontal < 0)
-            FacingDirection = Vector2Int.left;
+            FacingRotation.FacingDirection = Vector2Int.left;
         else
             return;
 
@@ -97,7 +86,7 @@ public class Player : MonoBehaviour
 
             if (Linking.Contains(nextVertex))
             {
-                Reset();
+                Die();
                 return;
             }
 
@@ -115,6 +104,8 @@ public class Player : MonoBehaviour
     {
         CurrentVertex = nextVertex;
         transform.position = CurrentVertex.Coordinates;
+
+        PlayerMoved?.Invoke();
     }
 
     private void AddPointToLine()
@@ -123,11 +114,13 @@ public class Player : MonoBehaviour
         CurrentLine.SetPosition(CurrentLine.positionCount - 1, CurrentVertex.Coordinates);
 
         Linking.Add(CurrentVertex);
+
+        LineCollider.points = Linking.Select(x => x.Coordinates).ToArray();
     }
 
     private Vertex GetNextVertex()
     {
-        Vector2Int nextIndex = CurrentVertex.Index + FacingDirection;
+        Vector2Int nextIndex = CurrentVertex.Index + FacingRotation.FacingDirection;
 
         Vertex nextVertex = Map.TryGetVertex(nextIndex.x, nextIndex.y);
 
@@ -191,16 +184,24 @@ public class Player : MonoBehaviour
 
         CurrentLine = null;
         Linking.Clear();
+        LineCollider.points = new Vector2[0];
     }
 
-    private void Reset()
+    private void Die()
     {
         if (Linking.Count > 0)
             SetCurrentVertex(Linking.First());
 
-        Destroy(CurrentLine.gameObject);
+        if (CurrentLine != null)
+            Destroy(CurrentLine.gameObject);
 
         CurrentLine = null;
         Linking.Clear();
+        LineCollider.points = new Vector2[0];
+    }
+
+    public static void KillPlayer()
+    {
+        _instance.Die();
     }
 }

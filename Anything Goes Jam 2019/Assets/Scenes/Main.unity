@@ -847,6 +847,7 @@ GameObject:
   - component: {fileID: 2069764549}
   - component: {fileID: 2069764551}
   - component: {fileID: 2069764552}
+  - component: {fileID: 2069764553}
   m_Layer: 0
   m_Name: Map
   m_TagString: Untagged
@@ -955,6 +956,21 @@ PolygonCollider2D:
       - {x: -0.5877852, y: -0.80901706}
       - {x: 0.58778536, y: -0.80901694}
       - {x: 0.9510565, y: 0.30901712}
+--- !u!114 &2069764553
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2069764548}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e62ac0ea2274fd443b3c15ee18708fd7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ExplosionPrefab: {fileID: 450645454082028186, guid: 20cc6c743621a284c974f17fe789c276,
+    type: 3}
+  ExplosionSound: {fileID: 8300000, guid: cfd2e477810ecc942a7e9e3441ab360c, type: 3}
 --- !u!1 &2130049050
 GameObject:
   m_ObjectHideFlags: 0

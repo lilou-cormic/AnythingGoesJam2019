@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -132,11 +133,16 @@ public class Map : MonoBehaviour
             Outline.AddLast(vertex);
         }
 
+        SpawnPlayer();
+
+        SpawnEnemies();
+    }
+
+    private void SpawnPlayer()
+    {
         Player player = Instantiate(PlayerPrefeb);
         player.CurrentVertex = _vertices[0, 0];
         player.transform.position = new Vector3(player.CurrentVertex.Index.x, player.CurrentVertex.Index.y);
-
-        SpawnEnemies();
     }
 
     private void SpawnEnemies()
@@ -281,7 +287,7 @@ public class Map : MonoBehaviour
 
         CellDestroyedPctText.text = CellDestroyedPct.ToString("F1") + "%";
 
-        if (CellDestroyedPct >= 80)
+        if (CellDestroyedPct >= 85)
             Win();
     }
 
@@ -294,6 +300,22 @@ public class Map : MonoBehaviour
 
             DestroyCell(cell);
         }
+
+        StartCoroutine(ExplodeMap());
+    }
+
+    private IEnumerator ExplodeMap()
+    {
+        float stopTime = Time.timeSinceLevelLoad + 2.5f;
+
+        while (Time.timeSinceLevelLoad < stopTime)
+        {
+            ExplosionManager.SpawnExplosion(_cells[Random.Range(0, CellColCount), Random.Range(0, CellRowCount)].Coordinates);
+
+            yield return new WaitForSeconds(0.1f);
+        }
+
+        DebugRestart();
     }
 
     public LinkedListNode<Vertex> GetNextVertexNode(LinkedListNode<Vertex> vertexNode)

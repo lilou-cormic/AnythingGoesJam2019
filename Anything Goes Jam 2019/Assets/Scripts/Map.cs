@@ -42,10 +42,7 @@ public class Map : MonoBehaviour
     private Enemy EnemyPrefab = null;
 
     [SerializeField]
-    private LineRenderer LinePrefab = null;
-
-    [SerializeField]
-    private Material PlacedLineMaterial = null;
+    private Line LinePrefab = null;
 
     public LinkedList<Vertex> Outline { get; private set; }
 
@@ -90,14 +87,13 @@ public class Map : MonoBehaviour
             }
         }
 
-        LineRenderer line = GetLine();
-        line.positionCount = 5;
-        line.SetPosition(0, new Vector3(0, 0));
-        line.SetPosition(1, new Vector3(verticesColCount - 1, 0));
-        line.SetPosition(2, new Vector3(verticesColCount - 1, verticesRowCount - 1));
-        line.SetPosition(3, new Vector3(0, verticesRowCount - 1));
-        line.SetPosition(4, new Vector3(0, 0));
-        line.material = PlacedLineMaterial;
+        Line line = GetLine();
+        line.AddPoint(new Vector3(0, 0));
+        line.AddPoint(new Vector3(verticesColCount - 1, 0));
+        line.AddPoint(new Vector3(verticesColCount - 1, verticesRowCount - 1));
+        line.AddPoint(new Vector3(0, verticesRowCount - 1));
+        line.AddPoint(new Vector3(0, 0));
+        line.PlaceLine();
 
         Outline.Clear();
 
@@ -225,7 +221,7 @@ public class Map : MonoBehaviour
         return null;
     }
 
-    public LineRenderer GetLine()
+    public Line GetLine()
     {
         return Instantiate(LinePrefab, transform);
     }

@@ -878,9 +878,8 @@ MonoBehaviour:
     type: 3}
   EnemyPrefab: {fileID: 4328664875909446278, guid: 416faceb10ac8eb4a9cdc594152ee46a,
     type: 3}
-  LinePrefab: {fileID: 1852955899101587244, guid: 61885a1c018cd8f4198d3af21eb0ff2f,
+  LinePrefab: {fileID: 3708735898461628356, guid: 61885a1c018cd8f4198d3af21eb0ff2f,
     type: 3}
-  PlacedLineMaterial: {fileID: 2100000, guid: ac318c71ad91a2b46b5fb3bdac6f8808, type: 2}
   CellDestroyedPctText: {fileID: 151868099}
 --- !u!4 &2069764550
 Transform:

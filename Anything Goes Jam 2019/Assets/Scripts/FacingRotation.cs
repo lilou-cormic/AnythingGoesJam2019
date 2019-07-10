@@ -24,7 +24,8 @@ public class FacingRotation : MonoBehaviour
 
             for (int i = 0; i < transform.childCount; i++)
             {
-                transform.GetChild(i).transform.rotation = Quaternion.Euler(0f, 0f, rotation);
+                if (!transform.GetChild(i).CompareTag("NoRotation"))
+                    transform.GetChild(i).transform.rotation = Quaternion.Euler(0f, 0f, rotation);
             }
         }
     }

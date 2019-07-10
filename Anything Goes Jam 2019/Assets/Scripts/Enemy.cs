@@ -3,16 +3,21 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(FacingRotation))]
+[RequireComponent(typeof(Rigidbody2D))]
 public class Enemy : MonoBehaviour
 {
     public Cell CurrentCell { get; set; }
 
     private Map Map => CurrentCell.Map;
 
+    private Rigidbody2D rb;
+
     private FacingRotation FacingRotation;
 
     private void Awake()
     {
+        rb = GetComponent<Rigidbody2D>();
+
         FacingRotation = GetComponent<FacingRotation>();
         FacingRotation.FacingDirection = Vector2Int.zero;
 
@@ -22,6 +27,11 @@ public class Enemy : MonoBehaviour
     private void Start()
     {
         ChangeDirection();
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        Player.KillPlayer();
     }
 
     public void Move()
@@ -40,11 +50,15 @@ public class Enemy : MonoBehaviour
 
     private void SetCurrentCell(Cell nextCell)
     {
-        //if (Physics2D.OverlapCircle(CurrentCell.Coordinates + (Vector2)FacingRotation.FacingDirection * 0.5f, 0.1f))
-        //    Player.KillPlayer();
-
         CurrentCell = nextCell;
-        transform.position = CurrentCell.Coordinates;
+    }
+
+    private void Update()
+    {
+        if (Vector2.Distance(rb.position, CurrentCell.Coordinates) < Mathf.Epsilon)
+            rb.MovePosition(CurrentCell.Coordinates);
+        else
+            rb.MovePosition(Vector2.Lerp(rb.position, CurrentCell.Coordinates, 20f * Time.deltaTime));
     }
 
     private void ChangeDirection()
@@ -62,7 +76,8 @@ public class Enemy : MonoBehaviour
         AddIfValid(Vector2Int.down);
         AddIfValid(Vector2Int.left);
 
-        FacingRotation.FacingDirection = possibleDirections[UnityEngine.Random.Range(0, possibleDirections.Count)];
+        if (possibleDirections.Count > 0)
+            FacingRotation.FacingDirection = possibleDirections[UnityEngine.Random.Range(0, possibleDirections.Count)];
     }
 
     private bool CanMove(Vector2Int direction)

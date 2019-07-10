@@ -90,7 +90,6 @@ GameObject:
   - component: {fileID: 423420626070390218}
   - component: {fileID: 423420626070390219}
   - component: {fileID: -7802429467066347610}
-  - component: {fileID: -5774716475969523629}
   m_Layer: 8
   m_Name: Player
   m_TagString: Untagged
@@ -127,7 +126,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   PlacedLineMaterial: {fileID: 2100000, guid: ac318c71ad91a2b46b5fb3bdac6f8808, type: 2}
-  LineCollider: {fileID: -5774716475969523629}
+  LineCollider: {fileID: 0}
 --- !u!114 &-7802429467066347610
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -140,24 +139,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88b1b1e9f9094b8468488cc8030b80b4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!68 &-5774716475969523629
-EdgeCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 423420626070390216}
-  m_Enabled: 1
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IsTrigger: 1
-  m_UsedByEffector: 0
-  m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
-  m_EdgeRadius: 0
-  m_Points:
-  - {x: -0.5, y: 0}
-  - {x: 0.5, y: 0}
 --- !u!1 &423420626154362987
 GameObject:
   m_ObjectHideFlags: 0

@@ -16,6 +16,6 @@ and ©2018 The ZCOOL QingKe HuangYou Project Authors (https://www.github.com/goo
 Contains assets (graphics and sounds) by Kenney (www.kenney.nl) Licensed under Creative Commons CC0 1.0 Universal
 
 Tools Used
-- Unity 2018.3.7f1
+- Unity 2019.1.9f1
 - Visual Studio 2017 Community 15.9.19
 - Bfxr 1.4.1

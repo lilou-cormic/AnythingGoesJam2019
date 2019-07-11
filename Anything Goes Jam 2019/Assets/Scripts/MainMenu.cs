@@ -8,6 +8,9 @@ public class MainMenu : MonoBehaviour
     public void StartGame()
     {
         SceneManager.LoadScene("Main");
+
+        //HACK ResetScore
+        ScoreManager.ResetScore();
     }
 
     public void ShowCredits()

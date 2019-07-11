@@ -25,6 +25,8 @@ public class Player : MonoBehaviour
 
     public static event Action PlayerMoved;
 
+    public static event Action PlayerDied;
+
     private bool _isDying = false;
 
     private void Awake()
@@ -229,6 +231,8 @@ public class Player : MonoBehaviour
         Linking.Clear();
 
         _isDying = false;
+
+        PlayerDied?.Invoke();
     }
 
     public static void KillPlayer()

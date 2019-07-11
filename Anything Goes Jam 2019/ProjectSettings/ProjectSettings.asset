@@ -12,9 +12,9 @@ PlayerSettings:
   targetDevice: 2
   useOnDemandResources: 0
   accelerometerFrequency: 60
-  companyName: DefaultCompany
-  productName: Anything Goes Jam 2019
-  defaultCursor: {fileID: 0}
+  companyName: lilou_cormic
+  productName: Nextered
+  defaultCursor: {fileID: 2800000, guid: ab822f3caad9ef946be8f8d4f16072cc, type: 3}
   cursorHotspot: {x: 0, y: 0}
   m_SplashScreenBackgroundColor: {r: 0.13725491, g: 0.12156863, b: 0.1254902, a: 1}
   m_ShowUnitySplashScreen: 1
@@ -39,7 +39,11 @@ PlayerSettings:
     y: 0
     width: 1
     height: 1
-  m_SplashScreenLogos: []
+  m_SplashScreenLogos:
+  - logo: {fileID: 21300000, guid: bd5fbe7e87ad37e43a1ccb8bab7baea6, type: 3}
+    duration: 2
+  - logo: {fileID: 21300000, guid: 6e6462b8b5363154f8662abd86273630, type: 3}
+    duration: 2
   m_VirtualRealitySplashScreen: {fileID: 0}
   m_HolographicTrackingLossScreen: {fileID: 0}
   defaultScreenWidth: 1024

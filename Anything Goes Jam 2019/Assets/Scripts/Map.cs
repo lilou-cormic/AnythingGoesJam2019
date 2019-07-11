@@ -53,6 +53,14 @@ public class Map : MonoBehaviour
     [SerializeField]
     public TMPro.TextMeshProUGUI CellDestroyedPctText = null;
 
+    public static int Lives { get; private set; } = 3;
+
+    [SerializeField]
+    public TMPro.TextMeshProUGUI LivesText = null;
+
+    [SerializeField]
+    private AudioClip SectionDestroyedSound = null;
+
     private void Awake()
     {
         Outline = new LinkedList<Vertex>();
@@ -60,10 +68,19 @@ public class Map : MonoBehaviour
 
         _cells = new Cell[CellColCount, CellRowCount];
         _vertices = new Vertex[CellColCount + 1, CellRowCount + 1];
+
+        Player.PlayerDied += Player_PlayerDied;
+    }
+
+    private void OnDestroy()
+    {
+        Player.PlayerDied -= Player_PlayerDied;
     }
 
     private void Start()
     {
+        LivesText.text = $"Lives: {Lives}";
+
         int verticesColCount = _vertices.GetLength(0);
         int verticesRowCount = _vertices.GetLength(1);
 
@@ -137,30 +154,32 @@ public class Map : MonoBehaviour
     private void SpawnPlayer()
     {
         Player player = Instantiate(PlayerPrefeb);
-        player.CurrentVertex = _vertices[0, 0];
+        player.CurrentVertex = _vertices[_vertices.GetLength(0) / 2, 0];
         player.transform.position = new Vector3(player.CurrentVertex.Index.x, player.CurrentVertex.Index.y);
     }
 
     private void SpawnEnemies()
     {
-        int enemyCount = 3;
-        int split = enemyCount + 1;
-        int lineSplit = (split / 2);
+        int colSplit = 1 + LevelNumberManager.Level;
+        int rowSplit = 2 + (LevelNumberManager.Level > 0 ? (LevelNumberManager.Level / 4) : 0);
 
-        for (int i = 0; i < lineSplit; i++)
+        for (int i = 0; i < colSplit; i++)
         {
-            for (int j = 0; j < lineSplit; j++)
+            for (int j = 0; j < rowSplit; j++)
             {
                 if (j != 0 || i != 0)
-                    SpawnEnemy(i, j, lineSplit);
+                    SpawnEnemy(i, j, colSplit, rowSplit);
             }
         }
     }
 
-    private void SpawnEnemy(int i, int j, int lineSplit)
+    private void SpawnEnemy(int i, int j, float colSplit, float rowSplit)
     {
+        i = Mathf.Min(Mathf.FloorToInt(Random.Range(i * CellColCount / colSplit, (i + 1) * CellColCount / colSplit)), CellColCount - 1);
+        j = Mathf.Min(Mathf.FloorToInt(Random.Range(j * CellRowCount / rowSplit, (j + 1) * CellRowCount / rowSplit)), CellRowCount - 1);
+
         Enemy enemy = Instantiate(EnemyPrefab);
-        enemy.CurrentCell = _cells[Random.Range(i * CellColCount / lineSplit, (i + 1) * CellColCount / lineSplit), Random.Range(j * CellRowCount / lineSplit, (i + 1) * CellRowCount / lineSplit)];
+        enemy.CurrentCell = _cells[i, j];
         enemy.transform.position = enemy.CurrentCell.Coordinates;
 
         Enemies.Add(enemy);
@@ -172,7 +191,7 @@ public class Map : MonoBehaviour
             DebugPrint();
 
         if (Input.GetKeyDown(KeyCode.R))
-            DebugRestart();
+            SceneManager.LoadScene("Main");
     }
 
     private void DestroyCell(Cell cell)
@@ -188,7 +207,6 @@ public class Map : MonoBehaviour
                 Enemies.Remove(enemy);
                 enemy.Die();
             }
-
         }
 
         foreach (var vertex in cell.Vertices)
@@ -266,6 +284,8 @@ public class Map : MonoBehaviour
 
     private void SetOutline(IEnumerable<Vertex> outline)
     {
+        SoundPlayer.Play(SectionDestroyedSound);
+
         Outline = new LinkedList<Vertex>(outline);
 
         outlineCollider.points = Outline.Select(x => x.Coordinates).ToArray();
@@ -289,6 +309,9 @@ public class Map : MonoBehaviour
 
     private void Win()
     {
+        ScoreManager.AddPoints(Mathf.FloorToInt(CellDestroyedPct * ((2 * 60) - Time.timeSinceLevelLoad)));
+        ScoreManager.SetHighScore();
+
         foreach (var cell in _cells)
         {
             if (cell.IsDestroyed)
@@ -298,6 +321,15 @@ public class Map : MonoBehaviour
         }
 
         StartCoroutine(ExplodeMap());
+    }
+
+    private void Lose()
+    {
+        SceneManager.LoadScene("GameOver");
+
+        //Hack Lives
+        Lives = 3;
+        LevelNumberManager.GoToFirstLevel();
     }
 
     private IEnumerator ExplodeMap()
@@ -311,7 +343,9 @@ public class Map : MonoBehaviour
             yield return new WaitForSeconds(0.1f);
         }
 
-        DebugRestart();
+        LevelNumberManager.GoToNextLevel();
+
+        SceneManager.LoadScene("Main");
     }
 
     public LinkedListNode<Vertex> GetNextVertexNode(LinkedListNode<Vertex> vertexNode)
@@ -322,6 +356,16 @@ public class Map : MonoBehaviour
     public LinkedListNode<Vertex> GetPreviousVertexNode(LinkedListNode<Vertex> vertexNode)
     {
         return vertexNode.Previous ?? Outline.Last;
+    }
+
+    private void Player_PlayerDied()
+    {
+        Lives--;
+
+        LivesText.text = $"Lives: {Lives}";
+
+        if (Lives <= 0)
+            Lose();
     }
 
     private void DebugPrint()
@@ -346,10 +390,5 @@ public class Map : MonoBehaviour
         }
 
         Debug.Log(print);
-    }
-
-    private void DebugRestart()
-    {
-        SceneManager.LoadScene("Main");
     }
 }

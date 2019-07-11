@@ -14,6 +14,8 @@ public class Enemy : MonoBehaviour
 
     private FacingRotation FacingRotation;
 
+    private bool _isDead = false;
+
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -22,6 +24,11 @@ public class Enemy : MonoBehaviour
         FacingRotation.FacingDirection = Vector2Int.zero;
 
         Player.PlayerMoved += Player_PlayerMoved;
+    }
+
+    private void OnDestroy()
+    {
+        Player.PlayerMoved -= Player_PlayerMoved;
     }
 
     private void Start()
@@ -91,7 +98,10 @@ public class Enemy : MonoBehaviour
 
     public void Die()
     {
-        Player.PlayerMoved -= Player_PlayerMoved;
+        if (_isDead)
+            return;
+
+        _isDead = true;
 
         ExplosionManager.SpawnExplosion(transform.position);
 
@@ -100,6 +110,9 @@ public class Enemy : MonoBehaviour
 
     private void Player_PlayerMoved()
     {
+        if (_isDead)
+            return;
+
         Move();
     }
 }

@@ -4,7 +4,7 @@
 
 ![](Anything%20Goes%20Jam%202019/Cover.png)
 
-https://lilou-cormic.itch.io/in-the-dark
+https://lilou-cormic.itch.io/nextered
 
 Game created by lilou_cormic for [Anything Goes Jam [8 Bits to Infinity] (July 2019)](https://itch.io/jam/anything-goes-jam-8-bits-to-infinity)
 
